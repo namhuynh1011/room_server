@@ -1,0 +1,23 @@
+# Bỏ qua tất cả file .log
+*.log
+
+# Bỏ qua thư mục node_modules
+node_modules/
+
+# Bỏ qua thư mục build hoặc dist
+build/
+dist/
+
+# Bỏ qua file cấu hình môi trường
+.env
+
+# Bỏ qua file tạm của hệ điều hành
+.DS_Store
+Thumbs.db
+
+# Bỏ qua file biên dịch
+#*.class
+#*.exe
+#*.dll
+#*.o
+#*.so
