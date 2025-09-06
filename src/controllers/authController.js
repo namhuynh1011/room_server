@@ -1,15 +1,13 @@
-const express = require('express');
-const router = express.Router();
 const bcrypt = require('bcrypt');
-const { Op } = require('sequelize'); 
+const { Op } = require('sequelize');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const sendMail = require('../utils/sendMail');
-const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
+
 // Đăng ký tài khoản
-router.post('/register', async (req, res) => {
+exports.register = async (req, res) => {
   try {
-    const {  password, email, phone, full_name, role } = req.body;
+    const { password, email, phone, full_name, role } = req.body;
 
     // Kiểm tra phone/email đã tồn tại
     const existed = await User.findOne({ where: { [Op.or]: [{ phone }, { email }] } });
@@ -34,10 +32,10 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-});
+};
 
 // Đăng nhập tài khoản
-router.post('/login', async (req, res) => {
+exports.login = async (req, res) => {
   try {
     const { phoneOrEmail, password } = req.body;
     const user = await User.findOne({
@@ -72,9 +70,10 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-});
-//Quên Mật Khẩu
-router.post('/forgot-password', async (req, res) => {
+};
+
+// Quên mật khẩu
+exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
@@ -88,7 +87,6 @@ router.post('/forgot-password', async (req, res) => {
     await user.update({ password: hashedPassword });
 
     // Gửi mail cho user
-    //Nội Dung Gửi đến email
     await sendMail(
       email,
       'Cấp lại mật khẩu mới',
@@ -97,12 +95,12 @@ router.post('/forgot-password', async (req, res) => {
 
     res.json({ message: 'Mật khẩu mới đã được gửi tới email của bạn!' });
   } catch (err) {
-    res.status(400).json({ error: err.message }); 
+    res.status(400).json({ error: err.message });
   }
-});
+};
 
 // Cập nhật thông tin tài khoản
-router.put('/update', async (req, res) => {
+exports.updateUser = async (req, res) => {
   try {
     const { id, full_name, email, phone, password, profile_picture, zalo, facebook } = req.body;
 
@@ -111,10 +109,12 @@ router.put('/update', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
     }
+    
     // Đảm bảo user cập nhật đúng tài khoản của mình
     if (req.user.id !== id) {
       return res.status(403).json({ error: 'Không có quyền cập nhật tài khoản này.' });
     }
+    
     // Nếu đổi email hoặc phone, kiểm tra trùng lặp với người khác
     if (email && email !== user.email) {
       const existEmail = await User.findOne({ where: { email, id: { [Op.ne]: id } } });
@@ -122,6 +122,7 @@ router.put('/update', async (req, res) => {
         return res.status(409).json({ error: 'Email đã được sử dụng.' });
       }
     }
+    
     if (phone && phone !== user.phone) {
       const existPhone = await User.findOne({ where: { phone, id: { [Op.ne]: id } } });
       if (existPhone) {
@@ -145,5 +146,4 @@ router.put('/update', async (req, res) => {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-});
-module.exports = router;
+};

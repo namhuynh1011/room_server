@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('./index');
+const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
   id: {
@@ -32,11 +32,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'NULL'
   },
-  zalo:{
+  zalo: {
     type: DataTypes.STRING(20),
     allowNull: true
   },
-  facebook:{
+  facebook: {
     type: DataTypes.STRING(100),
     allowNull: true
   },
